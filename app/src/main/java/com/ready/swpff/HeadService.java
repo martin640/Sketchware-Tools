@@ -7,6 +7,8 @@ import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
@@ -31,6 +33,7 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -704,14 +707,15 @@ public class HeadService extends Service implements View.OnClickListener {
                     expandedView.setVisibility(View.VISIBLE);
                 }
 
+                String apk_path = findApk(Environment.getExternalStorageDirectory() + "/.sketchware/mysc/" + id + "/bin/");
 
                 project_title.setText(getAppTitle(Environment.getExternalStorageDirectory() + "/.sketchware/mysc/" + id + "/app/src/main/AndroidManifest.xml"));
                 project_path.setText("/.sketchware/data/" + id + "/");
                 project_api.setText(
                         "Min. SDK: " + getMinSdk(Environment.getExternalStorageDirectory() + "/.sketchware/mysc/" + id + "/app/build.gradle") + "\n" +
                                 "Target SDK: " + getTargetSdk(Environment.getExternalStorageDirectory() + "/.sketchware/mysc/" + id + "/app/build.gradle") + "\n" +
-                                "Version code: " + getVersionCode(Environment.getExternalStorageDirectory() + "/.sketchware/mysc/" + id + "/app/build.gradle") + "\n" +
-                                "Version name: " + getVersionName(Environment.getExternalStorageDirectory() + "/.sketchware/mysc/" + id + "/app/build.gradle")
+                                "Version code: " + getVersionCode(apk_path) + "\n" +
+                                "Version name: " + getVersionName(apk_path)
                 );
                 getImageFromUri(new File(Environment.getExternalStorageDirectory() + "/.sketchware/resources/icons/" + id + "/icon.png"), project_image);
 
@@ -968,15 +972,14 @@ public class HeadService extends Service implements View.OnClickListener {
         }
     }
 
-    public Integer getVersionCode(String gradle) {
-        File path = new File(gradle);
-        String gradle_content;
-        if (path.exists()) {
-            gradle_content = readFile(gradle);
-            if (gradle_content.length() != 0) {
+    public Integer getVersionCode(String path) {
+        if(path != null) {
+            final PackageManager pm = getPackageManager();
+            PackageInfo info = pm.getPackageArchiveInfo(path, 0);
+
+            if (info != null) {
                 try {
-                    return Integer.valueOf(gradle_content.substring(gradle_content.indexOf("versionCode ") + 12, gradle_content.indexOf("\n" +
-                            "        versionName")));
+                    return info.versionCode;
                 } catch (Exception e) {
                     return -1;
                 }
@@ -988,16 +991,14 @@ public class HeadService extends Service implements View.OnClickListener {
         }
     }
 
-    public String getVersionName(String gradle) {
-        File path = new File(gradle);
-        String gradle_content;
-        if (path.exists()) {
-            gradle_content = readFile(gradle);
-            if (gradle_content.length() != 0) {
+    public String getVersionName(String path) {
+        if(path != null) {
+            final PackageManager pm = getPackageManager();
+            PackageInfo info = pm.getPackageArchiveInfo(path, 0);
+
+            if (info != null) {
                 try {
-                    return gradle_content.substring(gradle_content.indexOf("versionName \"") + 13, gradle_content.indexOf("\"\n" +
-                            "    }\n" +
-                            "    buildTypes"));
+                    return info.versionName;
                 } catch (Exception e) {
                     return "null";
                 }
@@ -1037,5 +1038,21 @@ public class HeadService extends Service implements View.OnClickListener {
     public boolean isColorDark(int color) {
         double darkness = 1 - (0.299 * Color.red(color) + 0.587 * Color.green(color) + 0.114 * Color.blue(color)) / 255;
         return !(darkness < 0.5);
+    }
+
+    public String findApk(String path) {
+        File file = new File(path);
+        File[] files = file.listFiles(new FileFilter() {
+            @Override
+            public boolean accept(File f) {
+                return f.getName().endsWith(".apk");
+            }
+        });
+
+        if(files.length != 0) {
+            return files[0].getAbsolutePath();
+        } else {
+            return null;
+        }
     }
 }

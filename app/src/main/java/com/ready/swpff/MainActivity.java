@@ -29,9 +29,13 @@ public class MainActivity extends AppCompatActivity {
     private static final int CODE_DRAW_OVER_OTHER_APP_PERMISSION = 2084;
 
     @BindView(R.id.button)
-    Button start_service;
+    Button start_service1;
     @BindView(R.id.button2)
-    Button stop_service;
+    Button stop_service1;
+    @BindView(R.id.button3)
+    Button start_service2;
+    @BindView(R.id.button4)
+    Button stop_service2;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,23 +56,38 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void initializeView() {
-        start_service.setOnClickListener(new View.OnClickListener() {
+        start_service1.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                callService();
+                callService1();
             }
         });
 
-        stop_service.setOnClickListener(new View.OnClickListener() {
+        stop_service1.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 stopService(new Intent(MainActivity.this, HeadService.class));
                 Toast.makeText(MainActivity.this, "Service has been killed", Toast.LENGTH_SHORT).show();
             }
         });
+
+        start_service2.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                callService2();
+            }
+        });
+
+        stop_service2.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                stopService(new Intent(MainActivity.this, OreoService.class));
+                Toast.makeText(MainActivity.this, "Service has been killed", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
-    public void callService() {
+    public void callService1() {
         PermissionListener permissionlistener = new PermissionListener() {
             @Override
             public void onPermissionGranted() {
@@ -93,6 +112,40 @@ public class MainActivity extends AppCompatActivity {
             if(ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED){
                 Toast.makeText(MainActivity.this, "Starting service...", Toast.LENGTH_SHORT).show();
                 startService(new Intent(MainActivity.this, HeadService.class));
+                finish();
+            } else {
+                ActivityCompat.requestPermissions(MainActivity.this,
+                        new String[]{Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                        1);
+            }
+        }
+    }
+
+    public void callService2() {
+        PermissionListener permissionlistener = new PermissionListener() {
+            @Override
+            public void onPermissionGranted() {
+                Toast.makeText(MainActivity.this, "Starting service...", Toast.LENGTH_SHORT).show();
+                startService(new Intent(MainActivity.this, OreoService.class));
+                finish();
+            }
+
+            @Override
+            public void onPermissionDenied(ArrayList<String> deniedPermissions) {
+                Toast.makeText(MainActivity.this, "Permission Denied\n" + deniedPermissions.toString(), Toast.LENGTH_SHORT).show();
+            }
+        };
+
+        if (android.os.Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
+            TedPermission.with(this)
+                    .setPermissionListener(permissionlistener)
+                    .setDeniedMessage("If you reject permission,you can not use this service\n\nPlease turn on permissions at [Setting] > [Permission]")
+                    .setPermissions(Manifest.permission.SYSTEM_ALERT_WINDOW, Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                    .check();
+        } else {
+            if(ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED){
+                Toast.makeText(MainActivity.this, "Starting service...", Toast.LENGTH_SHORT).show();
+                startService(new Intent(MainActivity.this, OreoService.class));
                 finish();
             } else {
                 ActivityCompat.requestPermissions(MainActivity.this,

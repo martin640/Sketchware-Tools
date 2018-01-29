@@ -6,6 +6,15 @@
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
 
+    <permission
+        android:name="com.ready.swpff.ACCESS_SKETCHWARE_TOOLS"
+        android:description="@string/permission_desc"
+        android:icon="@drawable/ic_whatshot_black_24dp"
+        android:label="Access Sketchware Tools"
+        android:protectionLevel="normal"/>
+
+    <uses-permission android:name="com.ready.swpff.ACCESS_SKETCHWARE_TOOLS"/>
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -13,6 +22,9 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+
+        <meta-data android:name="android.max_aspect" android:value="2.1" />
+
         <activity
             android:name=".MainActivity"
             android:screenOrientation="unspecified">
@@ -29,9 +41,17 @@
             android:exported="false"/>
 
         <service
-            android:name=".FileModificationService"
-            android:enabled="true">
-        </service>
+            android:name=".OreoService"
+            android:enabled="true"
+            android:exported="false"/>
+
+        <activity
+            android:name=".Extra">
+
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+            </intent-filter>
+        </activity>
     </application>
 
 </manifest>

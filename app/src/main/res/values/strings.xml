@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Sketchware Tools</string>
+    <string name="permission_desc">Allows app to use Sketchware Tools and fetch project info</string>
 </resources>
