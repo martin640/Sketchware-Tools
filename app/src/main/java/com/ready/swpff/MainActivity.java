@@ -1,32 +1,41 @@
 package com.ready.swpff;
 
 import android.Manifest;
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.CountDownTimer;
+import android.os.Handler;
+import android.os.Looper;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.gun0912.tedpermission.PermissionListener;
 import com.gun0912.tedpermission.TedPermission;
 
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import io.ready.tools.ReadyTools;
 import io.ready.tools.ServiceTools;
 
 public class MainActivity extends AppCompatActivity {
@@ -46,11 +55,16 @@ public class MainActivity extends AppCompatActivity {
     @BindView(R.id.indicator2)
     ImageView indicator2;
 
+    ReadyTools readyTools;
+
+    ProgressDialog progressDialog;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
+        /* readyTools = ReadyTools.applyPlugin("http://localhost/api/readytools/ReadyTools.jar"); */
 
         if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(this)) {
 
@@ -130,9 +144,7 @@ public class MainActivity extends AppCompatActivity {
         PermissionListener permissionlistener = new PermissionListener() {
             @Override
             public void onPermissionGranted() {
-                Toast.makeText(MainActivity.this, "Starting service...", Toast.LENGTH_SHORT).show();
-                startService(new Intent(MainActivity.this, HeadService.class));
-                //finish();
+                new ProjectInfoStarter().execute("");
             }
 
             @Override
@@ -149,9 +161,7 @@ public class MainActivity extends AppCompatActivity {
                     .check();
         } else {
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
-                Toast.makeText(MainActivity.this, "Starting service...", Toast.LENGTH_SHORT).show();
-                startService(new Intent(MainActivity.this, HeadService.class));
-                //finish();
+                new ProjectInfoStarter().execute("");
             } else {
                 ActivityCompat.requestPermissions(MainActivity.this,
                         new String[]{Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE},
@@ -164,9 +174,7 @@ public class MainActivity extends AppCompatActivity {
         PermissionListener permissionlistener = new PermissionListener() {
             @Override
             public void onPermissionGranted() {
-                Toast.makeText(MainActivity.this, "Starting service...", Toast.LENGTH_SHORT).show();
-                startService(new Intent(MainActivity.this, OreoService.class));
-                //finish();
+                new PixelHelperStarter().execute("");
             }
 
             @Override
@@ -183,15 +191,34 @@ public class MainActivity extends AppCompatActivity {
                     .check();
         } else {
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
-                Toast.makeText(MainActivity.this, "Starting service...", Toast.LENGTH_SHORT).show();
-                startService(new Intent(MainActivity.this, OreoService.class));
-                //finish();
+                new PixelHelperStarter().execute("");
             } else {
                 ActivityCompat.requestPermissions(MainActivity.this,
                         new String[]{Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE},
                         1);
             }
         }
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.main, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+
+        switch (id) {
+            case R.id.item_stop_all:
+                stopService(new Intent(MainActivity.this, HeadService.class));
+                stopService(new Intent(MainActivity.this, OreoService.class));
+                Toast.makeText(this, "Services are killed.", Toast.LENGTH_SHORT).show();
+                break;
+        }
+
+        return super.onOptionsItemSelected(item);
     }
 
     @Override
@@ -231,6 +258,106 @@ public class MainActivity extends AppCompatActivity {
 
             // other 'case' lines to check for other
             // permissions this app might request
+        }
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        if (progressDialog != null) {
+            progressDialog.dismiss();
+            progressDialog = null;
+        }
+    }
+
+    private class ProjectInfoStarter extends AsyncTask<String, Void, String> {
+
+        @Override
+        protected String doInBackground(String... params) {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    Toast.makeText(MainActivity.this, "Starting service...", Toast.LENGTH_SHORT).show();
+                    startService(new Intent(MainActivity.this, HeadService.class));
+                }
+            });
+            return "";
+        }
+
+        @Override
+        protected void onPostExecute(String result) {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    if (progressDialog != null && progressDialog.isShowing())
+                        progressDialog.dismiss();
+                }
+            });
+        }
+
+        @Override
+        protected void onPreExecute() {
+            /*Handler handler = new Handler(Looper.getMainLooper());
+            handler.post(new Runnable() {
+                @Override
+                public void run() {
+                    progressDialog = new ProgressDialog(MainActivity.this);
+                    progressDialog.setMessage("Starting service...");
+                    progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+                    progressDialog.setCancelable(false);
+                    progressDialog.show();
+                }
+            });*/
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    progressDialog = new ProgressDialog(MainActivity.this);
+                    progressDialog.setMessage("Starting service...");
+                    progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+                    progressDialog.setCancelable(false);
+                    progressDialog.show();
+                }
+            });
+        }
+    }
+
+    private class PixelHelperStarter extends AsyncTask<String, Void, String> {
+
+        @Override
+        protected String doInBackground(String... params) {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    Toast.makeText(MainActivity.this, "Starting service...", Toast.LENGTH_SHORT).show();
+                    startService(new Intent(MainActivity.this, OreoService.class));
+                }
+            });
+            return "";
+        }
+
+        @Override
+        protected void onPostExecute(String result) {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    if (progressDialog != null && progressDialog.isShowing())
+                        progressDialog.dismiss();
+                }
+            });
+        }
+
+        @Override
+        protected void onPreExecute() {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    progressDialog = new ProgressDialog(MainActivity.this);
+                    progressDialog.setMessage("Starting service...");
+                    progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+                    progressDialog.setCancelable(false);
+                    progressDialog.show();
+                }
+            });
         }
     }
 }

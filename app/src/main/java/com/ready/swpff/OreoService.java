@@ -1,10 +1,15 @@
 package com.ready.swpff;
 
 import android.annotation.SuppressLint;
+import android.app.Notification;
+import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
+import android.os.Build;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.IBinder;
@@ -59,6 +64,14 @@ public class OreoService extends Service {
                 R.drawable.ic_close_black_24dp,
                 "Stop service",
                 hide);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
+            NotificationChannel androidChannel = new NotificationChannel("995",
+                    "Sketchware Tools", NotificationManager.IMPORTANCE_DEFAULT);
+            getManager().createNotificationChannel(androidChannel);
+
+            mBuilder.setChannelId("995");
+        }
 
         NotificationManager mNotifyMgr =
                 (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
@@ -120,27 +133,54 @@ public class OreoService extends Service {
     }
 
     public void writeManifest(String manifest) {
+        /*File file = new File(manifest);
+        String manifest_content;
+        if (file.exists()) {
+            manifest_content = readFile(manifest);
+
+            if(manifest_content.length() != 0) {
+                String part1 = manifest_content.substring(0, manifest_content.indexOf("<activity") - 1);
+                String part2 = manifest_content.substring(manifest_content.indexOf("<activity"), manifest_content.length());
+
+                String manifest_new = part1 + "\n" +
+                        "<meta-data android:name=\"android.max_aspect\" android:value=\"2.1\" />" + "\n" +
+                        part2;
+
+                try {
+                    FileOutputStream stream = new FileOutputStream(file);
+                    try {
+                        stream.write(manifest_new.getBytes());
+                    } finally {
+                        stream.close();
+                    }
+                } catch (IOException e) {
+                    Log.e("Exception", "File write failed: " + e.toString());
+                }
+            }
+        }*/
         File file = new File(manifest);
         String manifest_content;
         if (file.exists()) {
             manifest_content = readFile(manifest);
 
-            String part1 = manifest_content.substring(0, manifest_content.indexOf("<activity") - 1);
-            String part2 = manifest_content.substring(manifest_content.indexOf("<activity"), manifest_content.length());
+            if(manifest_content.length() != 0) {
+                String part1 = manifest_content.substring(0, manifest_content.indexOf("android:label=") - 1);
+                String part2 = manifest_content.substring(manifest_content.indexOf("android:label="), manifest_content.length());
 
-            String manifest_new = part1 + "\n" +
-                    "<meta-data android:name=\"android.max_aspect\" android:value=\"2.1\" />" + "\n" +
-                    part2;
+                String manifest_new = part1 + "\n" +
+                        "android:resizeableActivity=\"true\"" + "\n" +
+                        part2;
 
-            try {
-                FileOutputStream stream = new FileOutputStream(file);
                 try {
-                    stream.write(manifest_new.getBytes());
-                } finally {
-                    stream.close();
+                    FileOutputStream stream = new FileOutputStream(file);
+                    try {
+                        stream.write(manifest_new.getBytes());
+                    } finally {
+                        stream.close();
+                    }
+                } catch (IOException e) {
+                    Log.e("Exception", "File write failed: " + e.toString());
                 }
-            } catch (IOException e) {
-                Log.e("Exception", "File write failed: " + e.toString());
             }
         }
     }
@@ -165,5 +205,9 @@ public class OreoService extends Service {
         }
 
         return text.toString();
+    }
+
+    private NotificationManager getManager() {
+        return (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
     }
 }

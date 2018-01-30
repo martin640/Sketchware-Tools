@@ -2,6 +2,7 @@ package com.ready.swpff;
 
 import android.animation.ObjectAnimator;
 import android.annotation.SuppressLint;
+import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
@@ -119,6 +120,14 @@ public class HeadService extends Service implements View.OnClickListener {
                 R.drawable.ic_close_black_24dp,
                 "Stop service",
                 hide);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
+            NotificationChannel androidChannel = new NotificationChannel("995",
+                    "Sketchware Tools", NotificationManager.IMPORTANCE_DEFAULT);
+            getManager().createNotificationChannel(androidChannel);
+
+            mBuilder.setChannelId("995");
+        }
 
         NotificationManager mNotifyMgr =
                 (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
@@ -413,6 +422,10 @@ public class HeadService extends Service implements View.OnClickListener {
                 stopSelf();
                 break;
         }
+    }
+
+    private NotificationManager getManager() {
+        return (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
     }
 
     /*  on Floating Widget Long Click, increase the size of remove view as it look like taking focus */

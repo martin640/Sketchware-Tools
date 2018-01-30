@@ -1,4 +1,7 @@
 <resources>
     <string name="app_name">Sketchware Tools</string>
     <string name="permission_desc">Allows app to use Sketchware Tools and fetch project info</string>
+
+    <string name="project_info_service_desc">Service have chat head-like UI which shows current opened project info.</string>
+    <string name="pixel_screen_service_desc">When service detects Sketchware project build, it does add line which adds better support for Google Pixel screens into manifest.</string>
 </resources>
