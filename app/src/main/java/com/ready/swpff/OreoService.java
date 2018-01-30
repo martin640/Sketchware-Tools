@@ -1,53 +1,31 @@
 package com.ready.swpff;
 
-import android.animation.ObjectAnimator;
 import android.annotation.SuppressLint;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.Service;
-import android.content.ClipData;
-import android.content.ClipboardManager;
-import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
-import android.content.res.Configuration;
-import android.content.res.Resources;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Color;
-import android.graphics.PixelFormat;
-import android.graphics.Point;
-import android.graphics.PorterDuff;
-import android.os.Build;
-import android.os.CountDownTimer;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
-import android.support.annotation.NonNull;
 import android.support.v4.app.NotificationCompat;
-import android.support.v7.graphics.Palette;
 import android.util.Log;
-import android.view.Gravity;
-import android.view.LayoutInflater;
-import android.view.MotionEvent;
-import android.view.View;
-import android.view.WindowManager;
-import android.widget.ImageView;
-import android.widget.TextView;
+
+import com.ready.swpff.servicekillers.PixelKiller;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileFilter;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
+
+import io.ready.tools.IdHelper;
 
 import static io.ready.tools.IdHelper.getId;
 
 public class OreoService extends Service {
-    private FileWatcher buildWatcher;
+    private IdHelper.FileWatcher buildWatcher;
     private int NOTIF_ID = 45646;
     private NotificationCompat.Builder mBuilder;
 
@@ -68,10 +46,19 @@ public class OreoService extends Service {
         super.onCreate();
 
         mBuilder = new NotificationCompat.Builder(this)
-                        .setSmallIcon(R.mipmap.ic_launcher_foreground)
-                        .setContentTitle("Sketchware Tools")
-                        .setContentText("Pixel Screen Helper working")
-                        .setOngoing(true);
+                .setSmallIcon(R.drawable.ic_sketchware)
+                .setContentTitle("Sketchware Tools")
+                .setContentText("Pixel Screen Helper working")
+                .setOngoing(true);
+
+        Intent intentHide = new Intent(this, PixelKiller.class);
+
+        PendingIntent hide = PendingIntent.getBroadcast(this, (int) System.currentTimeMillis(), intentHide, PendingIntent.FLAG_CANCEL_CURRENT);
+
+        mBuilder.addAction(
+                R.drawable.ic_close_black_24dp,
+                "Stop service",
+                hide);
 
         NotificationManager mNotifyMgr =
                 (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
@@ -82,8 +69,8 @@ public class OreoService extends Service {
     }
 
     private void register_build_receiver() {
-        buildWatcher = new FileWatcher(Environment.getExternalStorageDirectory() + "/.sketchware/mysc/");
-        buildWatcher.setEventListener(new FileWatcher.EventListener() {
+        buildWatcher = new IdHelper.FileWatcher(Environment.getExternalStorageDirectory() + "/.sketchware/mysc/");
+        buildWatcher.setEventListener(new IdHelper.FileWatcher.EventListener() {
             @Override
             public void onCreateEvent(String path) {
                 int di = getId(path);

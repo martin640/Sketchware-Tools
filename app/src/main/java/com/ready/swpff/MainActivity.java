@@ -3,9 +3,12 @@ package com.ready.swpff;
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
+import android.graphics.PorterDuff;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
@@ -13,6 +16,7 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.gun0912.tedpermission.PermissionListener;
@@ -23,6 +27,7 @@ import java.util.Arrays;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import io.ready.tools.ServiceTools;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -36,6 +41,10 @@ public class MainActivity extends AppCompatActivity {
     Button start_service2;
     @BindView(R.id.button4)
     Button stop_service2;
+    @BindView(R.id.indicator1)
+    ImageView indicator1;
+    @BindView(R.id.indicator2)
+    ImageView indicator2;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -85,6 +94,36 @@ public class MainActivity extends AppCompatActivity {
                 Toast.makeText(MainActivity.this, "Service has been killed", Toast.LENGTH_SHORT).show();
             }
         });
+
+        CountDownTimer countDownTimer = new CountDownTimer(Integer.MAX_VALUE, 500) {
+            @Override
+            public void onTick(long millisUntilFinished) {
+                if (ServiceTools.serviceRunning(MainActivity.this, HeadService.class)) {
+                    start_service1.setEnabled(false);
+                    stop_service1.setEnabled(true);
+                    indicator1.getDrawable().setColorFilter(Color.GREEN, PorterDuff.Mode.SRC_IN);
+                } else {
+                    start_service1.setEnabled(true);
+                    stop_service1.setEnabled(false);
+                    indicator1.getDrawable().setColorFilter(Color.RED, PorterDuff.Mode.SRC_IN);
+                }
+
+                if (ServiceTools.serviceRunning(MainActivity.this, OreoService.class)) {
+                    start_service2.setEnabled(false);
+                    stop_service2.setEnabled(true);
+                    indicator2.getDrawable().setColorFilter(Color.GREEN, PorterDuff.Mode.SRC_IN);
+                } else {
+                    start_service2.setEnabled(true);
+                    stop_service2.setEnabled(false);
+                    indicator2.getDrawable().setColorFilter(Color.RED, PorterDuff.Mode.SRC_IN);
+                }
+            }
+
+            @Override
+            public void onFinish() {
+                return;
+            }
+        }.start();
     }
 
     public void callService1() {
@@ -93,7 +132,7 @@ public class MainActivity extends AppCompatActivity {
             public void onPermissionGranted() {
                 Toast.makeText(MainActivity.this, "Starting service...", Toast.LENGTH_SHORT).show();
                 startService(new Intent(MainActivity.this, HeadService.class));
-                finish();
+                //finish();
             }
 
             @Override
@@ -109,10 +148,10 @@ public class MainActivity extends AppCompatActivity {
                     .setPermissions(Manifest.permission.SYSTEM_ALERT_WINDOW, Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE)
                     .check();
         } else {
-            if(ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED){
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
                 Toast.makeText(MainActivity.this, "Starting service...", Toast.LENGTH_SHORT).show();
                 startService(new Intent(MainActivity.this, HeadService.class));
-                finish();
+                //finish();
             } else {
                 ActivityCompat.requestPermissions(MainActivity.this,
                         new String[]{Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE},
@@ -127,7 +166,7 @@ public class MainActivity extends AppCompatActivity {
             public void onPermissionGranted() {
                 Toast.makeText(MainActivity.this, "Starting service...", Toast.LENGTH_SHORT).show();
                 startService(new Intent(MainActivity.this, OreoService.class));
-                finish();
+                //finish();
             }
 
             @Override
@@ -143,10 +182,10 @@ public class MainActivity extends AppCompatActivity {
                     .setPermissions(Manifest.permission.SYSTEM_ALERT_WINDOW, Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE)
                     .check();
         } else {
-            if(ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED){
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
                 Toast.makeText(MainActivity.this, "Starting service...", Toast.LENGTH_SHORT).show();
                 startService(new Intent(MainActivity.this, OreoService.class));
-                finish();
+                //finish();
             } else {
                 ActivityCompat.requestPermissions(MainActivity.this,
                         new String[]{Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE},

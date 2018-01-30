@@ -23,7 +23,9 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
 
-        <meta-data android:name="android.max_aspect" android:value="2.1" />
+        <meta-data
+            android:name="android.max_aspect"
+            android:value="2.1"/>
 
         <activity
             android:name=".MainActivity"
@@ -52,6 +54,17 @@
                 <action android:name="android.intent.action.VIEW"/>
             </intent-filter>
         </activity>
+
+        <receiver
+            android:name=".servicekillers.PixelKiller"
+            android:enabled="true"
+            android:process=":remote"/>
+
+        <receiver
+            android:name=".servicekillers.ProjectInfoKiller"
+            android:enabled="true"
+            android:process=":remote"/>
+
     </application>
 
 </manifest>

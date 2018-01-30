@@ -2,6 +2,8 @@ package com.ready.swpff;
 
 import android.animation.ObjectAnimator;
 import android.annotation.SuppressLint;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.Service;
 import android.content.ClipData;
 import android.content.ClipboardManager;
@@ -17,7 +19,6 @@ import android.graphics.Color;
 import android.graphics.PixelFormat;
 import android.graphics.Point;
 import android.graphics.PorterDuff;
-import android.graphics.drawable.GradientDrawable;
 import android.os.Build;
 import android.os.CountDownTimer;
 import android.os.Environment;
@@ -25,6 +26,7 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
 import android.support.annotation.NonNull;
+import android.support.v4.app.NotificationCompat;
 import android.support.v7.graphics.Palette;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -33,13 +35,16 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
+
+import com.ready.swpff.servicekillers.ProjectInfoKiller;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileReader;
 import java.io.IOException;
+
+import io.ready.tools.IdHelper;
 
 import static io.ready.tools.IdHelper.getId;
 
@@ -49,7 +54,7 @@ public class HeadService extends Service implements View.OnClickListener {
     private ImageView remove_image_view;
     private Point szWindow = new Point();
     private View removeFloatingWidgetView;
-    private FileWatcher fileOb, buildWatcher;
+    private IdHelper.FileWatcher fileOb, buildWatcher;
 
     private TextView project_title, project_path, project_api;
     private ImageView project_image;
@@ -64,6 +69,8 @@ public class HeadService extends Service implements View.OnClickListener {
     private CountDownTimer timer;
     private ObjectAnimator objectAnimator;
 
+    private int NOTIF_ID = 45656;
+    private NotificationCompat.Builder mBuilder;
 
     public HeadService() {
     }
@@ -92,7 +99,31 @@ public class HeadService extends Service implements View.OnClickListener {
         implementClickListeners();
         implementTouchListenerToFloatingWidgetView();
 
+        createNotification();
+
         register_receiver();
+    }
+
+    private void createNotification() {
+        mBuilder = new NotificationCompat.Builder(this)
+                .setSmallIcon(R.drawable.ic_sketchware)
+                .setContentTitle("Sketchware Tools")
+                .setContentText("Project Info working")
+                .setOngoing(true);
+
+        Intent intentHide = new Intent(this, ProjectInfoKiller.class);
+
+        PendingIntent hide = PendingIntent.getBroadcast(this, (int) System.currentTimeMillis(), intentHide, PendingIntent.FLAG_CANCEL_CURRENT);
+
+        mBuilder.addAction(
+                R.drawable.ic_close_black_24dp,
+                "Stop service",
+                hide);
+
+        NotificationManager mNotifyMgr =
+                (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        // Builds the notification and issues it.
+        mNotifyMgr.notify(NOTIF_ID, mBuilder.build());
     }
 
     private View addRemoveView(LayoutInflater inflater) {
@@ -126,6 +157,8 @@ public class HeadService extends Service implements View.OnClickListener {
 
         //Add the view to the window
         mWindowManager.addView(removeFloatingWidgetView, paramRemove);
+
+
         return remove_image_view;
     }
 
@@ -580,8 +613,8 @@ public class HeadService extends Service implements View.OnClickListener {
     }
 
     private void register_receiver() {
-        fileOb = new FileWatcher(Environment.getExternalStorageDirectory() + "/.sketchware/data/");
-        fileOb.setEventListener(new FileWatcher.EventListener() {
+        fileOb = new IdHelper.FileWatcher(Environment.getExternalStorageDirectory() + "/.sketchware/data/");
+        fileOb.setEventListener(new IdHelper.FileWatcher.EventListener() {
             @Override
             public void onCreateEvent(String path) {
                 //checkPath(path);
@@ -617,8 +650,8 @@ public class HeadService extends Service implements View.OnClickListener {
     }
 
     private void register_build_receiver() {
-        buildWatcher = new FileWatcher(Environment.getExternalStorageDirectory() + "/.sketchware/mysc/");
-        buildWatcher.setEventListener(new FileWatcher.EventListener() {
+        buildWatcher = new IdHelper.FileWatcher(Environment.getExternalStorageDirectory() + "/.sketchware/mysc/");
+        buildWatcher.setEventListener(new IdHelper.FileWatcher.EventListener() {
             @Override
             public void onCreateEvent(String path) {
                 int di = getId(path);
@@ -740,11 +773,27 @@ public class HeadService extends Service implements View.OnClickListener {
             e.printStackTrace();
         }
 
+        try {
+            if (buildWatcher != null)
+                buildWatcher.stopWatching();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        NotificationManager mNotifyMgr =
+                (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        mNotifyMgr.cancel(NOTIF_ID);
+
         if (mFloatingWidgetView != null)
             mWindowManager.removeView(mFloatingWidgetView);
 
         if (removeFloatingWidgetView != null)
             mWindowManager.removeView(removeFloatingWidgetView);
+    }
+
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        return START_STICKY;
     }
 
     public boolean isNumeric(CharSequence u) {
@@ -973,7 +1022,7 @@ public class HeadService extends Service implements View.OnClickListener {
     }
 
     public Integer getVersionCode(String path) {
-        if(path != null) {
+        if (path != null) {
             final PackageManager pm = getPackageManager();
             PackageInfo info = pm.getPackageArchiveInfo(path, 0);
 
@@ -992,7 +1041,7 @@ public class HeadService extends Service implements View.OnClickListener {
     }
 
     public String getVersionName(String path) {
-        if(path != null) {
+        if (path != null) {
             final PackageManager pm = getPackageManager();
             PackageInfo info = pm.getPackageArchiveInfo(path, 0);
 
@@ -1049,7 +1098,7 @@ public class HeadService extends Service implements View.OnClickListener {
             }
         });
 
-        if(files.length != 0) {
+        if (files.length != 0) {
             return files[0].getAbsolutePath();
         } else {
             return null;
