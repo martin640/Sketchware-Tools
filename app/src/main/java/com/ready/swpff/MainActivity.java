@@ -6,22 +6,24 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
+import android.graphics.Rect;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.CountDownTimer;
-import android.os.Handler;
-import android.os.Looper;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.util.DisplayMetrics;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.Window;
 import android.widget.Button;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -29,14 +31,15 @@ import android.widget.Toast;
 import com.gun0912.tedpermission.PermissionListener;
 import com.gun0912.tedpermission.TedPermission;
 
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import io.ready.tools.ReadyTools;
+import io.ready.tools.DestinyTools;
 import io.ready.tools.ServiceTools;
+import io.ready.tools.Updater;
+import io.ready.tools.ViewHelper;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -55,16 +58,24 @@ public class MainActivity extends AppCompatActivity {
     @BindView(R.id.indicator2)
     ImageView indicator2;
 
-    ReadyTools readyTools;
+    @BindView(R.id.container_project_info)
+    FrameLayout project_info;
+    @BindView(R.id.container_pixel_helper)
+    FrameLayout pixel_helper;
 
     ProgressDialog progressDialog;
+
+    Updater updater;
+    DisplayMetrics displayMetrics;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
-        /* readyTools = ReadyTools.applyPlugin("http://localhost/api/readytools/ReadyTools.jar"); */
+
+        displayMetrics = new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
 
         if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(this)) {
 
@@ -79,6 +90,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void initializeView() {
+
+        updater = new Updater(this, BuildConfig.VERSION_CODE);
+        updater.check();
+
         start_service1.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -109,27 +124,45 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        if (!DestinyTools.isWideScreen(displayMetrics.heightPixels + DestinyTools.getSystemBarsHeight(MainActivity.this), displayMetrics.widthPixels)) {
+            try {
+                TextView d = findViewById(R.id.textView4);
+                d.setText("We detected that your aspect ration is normal, so you will not need this tool.");
+                ViewHelper.enableView(pixel_helper, false);
+            } catch (NullPointerException e) {
+                e.printStackTrace();
+            }
+        } else {
+            try {
+                ViewHelper.enableView(pixel_helper, true);
+            } catch (NullPointerException e) {
+                e.printStackTrace();
+            }
+        }
+
         CountDownTimer countDownTimer = new CountDownTimer(Integer.MAX_VALUE, 500) {
             @Override
             public void onTick(long millisUntilFinished) {
                 if (ServiceTools.serviceRunning(MainActivity.this, HeadService.class)) {
                     start_service1.setEnabled(false);
                     stop_service1.setEnabled(true);
-                    indicator1.getDrawable().setColorFilter(Color.GREEN, PorterDuff.Mode.SRC_IN);
+                    indicator1.getDrawable().setColorFilter(/*GREEN*/Color.parseColor("#66BB6A"), PorterDuff.Mode.SRC_IN);
                 } else {
                     start_service1.setEnabled(true);
                     stop_service1.setEnabled(false);
-                    indicator1.getDrawable().setColorFilter(Color.RED, PorterDuff.Mode.SRC_IN);
+                    indicator1.getDrawable().setColorFilter(/*RED*/Color.parseColor("#EF5350"), PorterDuff.Mode.SRC_IN);
                 }
 
-                if (ServiceTools.serviceRunning(MainActivity.this, OreoService.class)) {
-                    start_service2.setEnabled(false);
-                    stop_service2.setEnabled(true);
-                    indicator2.getDrawable().setColorFilter(Color.GREEN, PorterDuff.Mode.SRC_IN);
-                } else {
-                    start_service2.setEnabled(true);
-                    stop_service2.setEnabled(false);
-                    indicator2.getDrawable().setColorFilter(Color.RED, PorterDuff.Mode.SRC_IN);
+                if (DestinyTools.isWideScreen(displayMetrics.heightPixels + DestinyTools.getSystemBarsHeight(MainActivity.this), displayMetrics.widthPixels)) {
+                    if (ServiceTools.serviceRunning(MainActivity.this, OreoService.class)) {
+                        start_service2.setEnabled(false);
+                        stop_service2.setEnabled(true);
+                        indicator2.getDrawable().setColorFilter(/*GREEN*/Color.parseColor("#66BB6A"), PorterDuff.Mode.SRC_IN);
+                    } else {
+                        start_service2.setEnabled(true);
+                        stop_service2.setEnabled(false);
+                        indicator2.getDrawable().setColorFilter(/*RED*/Color.parseColor("#EF5350"), PorterDuff.Mode.SRC_IN);
+                    }
                 }
             }
 
@@ -216,10 +249,19 @@ public class MainActivity extends AppCompatActivity {
                 stopService(new Intent(MainActivity.this, OreoService.class));
                 Toast.makeText(this, "Services are killed.", Toast.LENGTH_SHORT).show();
                 break;
+            case R.id.item_about:
+                startActivity(new Intent(MainActivity.this, AboutActivity.class));
+                break;
         }
 
         return super.onOptionsItemSelected(item);
     }
+
+    /*@Override
+    public void onReadyCreated() {
+        Log.d(getActivityTag(), getVersionName());
+        super.onReadyCreated();
+    }*/
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {

@@ -16,10 +16,13 @@ import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.ColorFilter;
 import android.graphics.PixelFormat;
 import android.graphics.Point;
 import android.graphics.PorterDuff;
+import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.CountDownTimer;
 import android.os.Environment;
@@ -27,8 +30,10 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationCompat;
 import android.support.v7.graphics.Palette;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -55,7 +60,7 @@ public class HeadService extends Service implements View.OnClickListener {
     private ImageView remove_image_view;
     private Point szWindow = new Point();
     private View removeFloatingWidgetView;
-    private IdHelper.FileWatcher fileOb, buildWatcher;
+    private IdHelper.FileWatcher fileOb, buildWatcher, sharedOb, sharedBuildWatcher;
 
     private TextView project_title, project_path, project_api;
     private ImageView project_image;
@@ -121,7 +126,7 @@ public class HeadService extends Service implements View.OnClickListener {
                 "Stop service",
                 hide);
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationChannel androidChannel = new NotificationChannel("995",
                     "Sketchware Tools", NotificationManager.IMPORTANCE_DEFAULT);
             getManager().createNotificationChannel(androidChannel);
@@ -693,6 +698,40 @@ public class HeadService extends Service implements View.OnClickListener {
             }
         });
         buildWatcher.startWatching();
+
+        try {
+            sharedBuildWatcher = new IdHelper.FileWatcher(Environment.getExternalStorageDirectory() + "/.sketchware/temp/proj/");
+            sharedBuildWatcher.setEventListener(new IdHelper.FileWatcher.EventListener() {
+                @Override
+                public void onCreateEvent(String path) {
+                    showSharedInfo(path);
+                }
+
+                @Override
+                public void onModifyEvent(String path) {
+                    showSharedInfo(path);
+                }
+
+                @Override
+                public void onDeleteEvent(String path) {
+                    showSharedInfo(path);
+                }
+
+                @Override
+                public void onUpdateEvent(String path) {
+
+                }
+
+                @Override
+                public void onAccessEvent(String path) {
+
+                }
+            });
+            sharedBuildWatcher.startWatching();
+        } catch (Exception e) {
+            Log.e("SharedProjBuildWatcher", e.getMessage());
+            stopSelf();
+        }
     }
 
     public void showInfo(final int id) {
@@ -773,12 +812,62 @@ public class HeadService extends Service implements View.OnClickListener {
         });
     }
 
+    public void showSharedInfo(final String path) {
+        Handler refresh3 = new Handler(Looper.getMainLooper());
+        refresh3.post(new Runnable() {
+            @SuppressLint("SetTextI18n")
+            public void run() {
+                if (isViewCollapsed()) {
+                    //When user clicks on the image view of the collapsed layout,
+                    //visibility of the collapsed layout will be changed to "View.GONE"
+                    //and expanded view will become visible.
+                    collapsedView.setVisibility(View.GONE);
+                    expandedView.setVisibility(View.VISIBLE);
+                }
+
+                String apk_path = findApk(Environment.getExternalStorageDirectory() + "/.sketchware/temp/proj/bin/");
+
+                try {
+                    project_title.setText(getSharedAppTitle(apk_path));
+                    project_path.setText("Shared project");
+                    project_api.setText(
+                            "Version code: " + getSharedAppVersionCode(apk_path) + "\n" +
+                                    "Version name: " + getSharedAppVersionName(apk_path)
+                    );
+                    project_image.setImageDrawable(getSharedAppIcon(apk_path));
+                } catch (Exception e) {
+                    Log.e("SharedProjBuildWatcher", e.getMessage());
+                    stopSelf();
+                }
+
+                //copyContentToClipboard(Environment.getExternalStorageDirectory() + "/.sketchware/data/" + id + "/logic");
+
+                WindowManager.LayoutParams mParams = (WindowManager.LayoutParams) mFloatingWidgetView.getLayoutParams();
+                mWindowManager.updateViewLayout(mFloatingWidgetView, mParams);
+            }
+        });
+    }
+
     @Override
     public void onDestroy() {
         super.onDestroy();
 
         /*  on destroy remove both view from window manager */
 
+        destroyFileObservers();
+
+        NotificationManager mNotifyMgr =
+                (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        mNotifyMgr.cancel(NOTIF_ID);
+
+        if (mFloatingWidgetView != null)
+            mWindowManager.removeView(mFloatingWidgetView);
+
+        if (removeFloatingWidgetView != null)
+            mWindowManager.removeView(removeFloatingWidgetView);
+    }
+
+    public void destroyFileObservers() {
         try {
             if (fileOb != null)
                 fileOb.stopWatching();
@@ -793,15 +882,19 @@ public class HeadService extends Service implements View.OnClickListener {
             e.printStackTrace();
         }
 
-        NotificationManager mNotifyMgr =
-                (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-        mNotifyMgr.cancel(NOTIF_ID);
+        try {
+            if (sharedOb != null)
+                sharedOb.stopWatching();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
-        if (mFloatingWidgetView != null)
-            mWindowManager.removeView(mFloatingWidgetView);
-
-        if (removeFloatingWidgetView != null)
-            mWindowManager.removeView(removeFloatingWidgetView);
+        try {
+            if (sharedBuildWatcher != null)
+                sharedBuildWatcher.stopWatching();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -858,6 +951,12 @@ public class HeadService extends Service implements View.OnClickListener {
             }
         }
     }
+
+    /*
+     *
+     * LOCAL PROJECTS
+     *
+     * */
 
     public String getPackage(String path) throws NullPointerException {
         File file = new File(path);
@@ -1072,6 +1171,106 @@ public class HeadService extends Service implements View.OnClickListener {
         }
     }
 
+    /*
+     *
+     * SHARED PROJECTS PROJECTS
+     *
+     * */
+
+    public String getSharedAppTitle(String path) {
+        if (path != null) {
+            final PackageManager pm = getPackageManager();
+            PackageInfo info = pm.getPackageArchiveInfo(path, 0);
+
+            if (info != null) {
+                try {
+                    info.applicationInfo.sourceDir = path;
+                    info.applicationInfo.publicSourceDir = path;
+
+                    destroyFileObservers();
+                    register_receiver();
+
+                    return (String) info.applicationInfo.loadLabel(pm);
+                } catch (Exception e) {
+                    return "Unknown";
+                }
+            } else {
+                return "Unknown";
+            }
+        } else {
+            return "Unknown";
+        }
+    }
+
+    public Integer getSharedAppVersionCode(String path) {
+        if (path != null) {
+            final PackageManager pm = getPackageManager();
+            PackageInfo info = pm.getPackageArchiveInfo(path, 0);
+
+            if (info != null) {
+                try {
+                    return info.versionCode;
+                } catch (Exception e) {
+                    return -1;
+                }
+            } else {
+                return -1;
+            }
+        } else {
+            return -1;
+        }
+    }
+
+    public String getSharedAppVersionName(String path) {
+        if (path != null) {
+            final PackageManager pm = getPackageManager();
+            PackageInfo info = pm.getPackageArchiveInfo(path, 0);
+
+            if (info != null) {
+                try {
+                    return info.versionName;
+                } catch (Exception e) {
+                    return "null";
+                }
+            } else {
+                return "null";
+            }
+        } else {
+            return "null";
+        }
+    }
+
+    public Drawable getSharedAppIcon(String path) {
+        if (path != null) {
+            final PackageManager pm = getPackageManager();
+            PackageInfo info = pm.getPackageArchiveInfo(path, 0);
+
+            if (info != null) {
+                try {
+                    info.applicationInfo.sourceDir = path;
+                    info.applicationInfo.publicSourceDir = path;
+
+                    destroyFileObservers();
+                    register_receiver();
+
+                    return info.applicationInfo.loadIcon(pm);
+                } catch (Exception e) {
+                    return getResources().getDrawable(R.drawable.ic_android_black_24dp);
+                }
+            } else {
+                return getResources().getDrawable(R.drawable.ic_android_black_24dp);
+            }
+        } else {
+            return getResources().getDrawable(R.drawable.ic_android_black_24dp);
+        }
+    }
+
+    /*
+     *
+     * COMMON
+     *
+     * */
+
     public void copyContentToClipboard(String file) {
         File path = new File(file);
         String gradle_content;
@@ -1111,7 +1310,7 @@ public class HeadService extends Service implements View.OnClickListener {
             }
         });
 
-        if (files.length != 0) {
+        if (files != null && files.length != 0) {
             return files[0].getAbsolutePath();
         } else {
             return null;

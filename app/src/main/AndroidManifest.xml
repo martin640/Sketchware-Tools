@@ -22,7 +22,6 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-
         <meta-data
             android:name="android.max_aspect"
             android:value="2.1"/>
@@ -41,15 +40,12 @@
             android:name=".HeadService"
             android:enabled="true"
             android:exported="false"/>
-
         <service
             android:name=".OreoService"
             android:enabled="true"
             android:exported="false"/>
 
-        <activity
-            android:name=".Extra">
-
+        <activity android:name=".Extra">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW"/>
             </intent-filter>
@@ -59,12 +55,13 @@
             android:name=".servicekillers.PixelKiller"
             android:enabled="true"
             android:process=":remote"/>
-
         <receiver
             android:name=".servicekillers.ProjectInfoKiller"
             android:enabled="true"
             android:process=":remote"/>
 
+        <activity android:name=".AboutActivity">
+        </activity>
     </application>
 
 </manifest>
