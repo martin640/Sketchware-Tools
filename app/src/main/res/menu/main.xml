@@ -7,6 +7,10 @@
         android:title="Stop all services"
         app:showAsAction="never"/>
     <item
+        android:id="@+id/item_settings"
+        android:title="Settings"
+        app:showAsAction="never"/>
+    <item
         android:id="@+id/item_about"
         android:title="About app"
         app:showAsAction="never"/>

@@ -25,6 +25,7 @@ import android.view.Window;
 import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -38,12 +39,16 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import io.ready.tools.DestinyTools;
 import io.ready.tools.ServiceTools;
+import io.ready.tools.ThemeTools;
 import io.ready.tools.Updater;
 import io.ready.tools.ViewHelper;
 
 public class MainActivity extends AppCompatActivity {
 
     private static final int CODE_DRAW_OVER_OTHER_APP_PERMISSION = 2084;
+
+    @BindView(R.id.aroot)
+    LinearLayout aroot;
 
     @BindView(R.id.button)
     Button start_service1;
@@ -67,12 +72,16 @@ public class MainActivity extends AppCompatActivity {
 
     Updater updater;
     DisplayMetrics displayMetrics;
+    CountDownTimer timer;
+    CountDownTimer countDownTimer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        ThemeTools.loadTheme(getSharedPreferences("settings", MODE_PRIVATE).getInt("2", 0), this);
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
+        ThemeTools.finishTheme(getSharedPreferences("settings", MODE_PRIVATE).getInt("2", 0), aroot);
 
         displayMetrics = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
@@ -124,7 +133,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        if (!DestinyTools.isWideScreen(displayMetrics.heightPixels + DestinyTools.getSystemBarsHeight(MainActivity.this), displayMetrics.widthPixels)) {
+        if (!getSharedPreferences("settings", MODE_PRIVATE).getBoolean("1", false) && !DestinyTools.isWideScreen(displayMetrics.heightPixels + DestinyTools.getSystemBarsHeight(MainActivity.this), displayMetrics.widthPixels)) {
             try {
                 TextView d = findViewById(R.id.textView4);
                 d.setText("We detected that your aspect ration is normal, so you will not need this tool.");
@@ -140,7 +149,11 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
-        CountDownTimer countDownTimer = new CountDownTimer(Integer.MAX_VALUE, 500) {
+        if(countDownTimer != null) {
+            countDownTimer.cancel();
+        }
+
+        countDownTimer = new CountDownTimer(Integer.MAX_VALUE, 500) {
             @Override
             public void onTick(long millisUntilFinished) {
                 if (ServiceTools.serviceRunning(MainActivity.this, HeadService.class)) {
@@ -249,6 +262,9 @@ public class MainActivity extends AppCompatActivity {
                 stopService(new Intent(MainActivity.this, OreoService.class));
                 Toast.makeText(this, "Services are killed.", Toast.LENGTH_SHORT).show();
                 break;
+            case R.id.item_settings:
+                startActivityForResult(new Intent(MainActivity.this, SettingsActivity.class), 4);
+                break;
             case R.id.item_about:
                 startActivity(new Intent(MainActivity.this, AboutActivity.class));
                 break;
@@ -277,6 +293,22 @@ public class MainActivity extends AppCompatActivity {
 
                 finish();
             }
+        } else if (requestCode == 4) {
+            if (timer != null) {
+                timer.cancel();
+            }
+
+            timer = new CountDownTimer(500, 500) {
+                @Override
+                public void onTick(long millisUntilFinished) {
+                    //
+                }
+
+                @Override
+                public void onFinish() {
+                    recreate();
+                }
+            }.start();
         } else {
             super.onActivityResult(requestCode, resultCode, data);
         }
@@ -311,6 +343,26 @@ public class MainActivity extends AppCompatActivity {
             progressDialog = null;
         }
     }
+
+    /*public void loadTheme(int theme) {
+        if (theme == 0) {
+            setTheme(R.style.AppTheme);
+        } else if (theme == 1) {
+            setTheme(R.style.AppTheme_Dark);
+        } else if (theme == 2) {
+            setTheme(R.style.AppTheme_Amoled);
+        }
+    }
+
+    public void finishTheme(int theme) {
+        if (theme == 0) {
+            //
+        } else if (theme == 1) {
+            //
+        } else if (theme == 2) {
+            aroot.setBackgroundColor(Color.BLACK);
+        }
+    }*/
 
     private class ProjectInfoStarter extends AsyncTask<String, Void, String> {
 
