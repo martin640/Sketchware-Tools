@@ -5,7 +5,7 @@ import android.view.ViewGroup;
 
 import java.util.ArrayList;
 
-public class ViewHelper {
+public abstract class ViewHelper {
 
     private static ArrayList<View> views;
 

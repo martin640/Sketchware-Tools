@@ -3,7 +3,7 @@ package io.ready.tools;
 import android.app.Activity;
 import android.content.res.TypedArray;
 
-public class DestinyTools {
+public abstract class DestinyTools {
 
     public static Boolean isWideScreen(int height, int width) {
         int absolute = Math.round((float) Math.floor(height / width));

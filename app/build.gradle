@@ -35,4 +35,5 @@ dependencies {
     annotationProcessor 'com.jakewharton:butterknife-compiler:8.8.1'
     implementation 'gun0912.ted:tedpermission:2.1.0'
     implementation 'com.android.support:cardview-v7:27.0.2'
+    implementation 'de.hdodenhof:circleimageview:2.2.0'
 }

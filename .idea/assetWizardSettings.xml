@@ -65,7 +65,7 @@
                                 <PersistentState>
                                   <option name="values">
                                     <map>
-                                      <entry key="url" value="jar:file:/C:/Program%20Files/Android/android-studio/plugins/android/lib/android.jar!/images/material_design_icons/social/ic_whatshot_black_24dp.xml" />
+                                      <entry key="url" value="jar:file:/C:/Program%20Files/Android/android-studio/plugins/android/lib/android.jar!/images/material_design_icons/action/ic_account_circle_black_24dp.xml" />
                                     </map>
                                   </option>
                                 </PersistentState>
@@ -75,12 +75,9 @@
                         </option>
                         <option name="values">
                           <map>
-                            <entry key="assetSourceType" value="FILE" />
-                            <entry key="height" value="439" />
-                            <entry key="outputName" value="ic_github_logo" />
+                            <entry key="outputName" value="ic_account_circle_black_24dp" />
                             <entry key="overrideSize" value="true" />
                             <entry key="sourceFile" value="E:\Downloads\github-logo.svg" />
-                            <entry key="width" value="439" />
                           </map>
                         </option>
                       </PersistentState>

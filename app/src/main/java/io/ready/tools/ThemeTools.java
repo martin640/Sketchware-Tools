@@ -6,7 +6,7 @@ import android.view.View;
 
 import com.ready.swpff.R;
 
-public class ThemeTools {
+public abstract class ThemeTools {
 
     public static void loadTheme(int theme, Activity activity) {
         if (theme == 0) {

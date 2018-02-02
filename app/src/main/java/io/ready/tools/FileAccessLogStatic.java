@@ -1,5 +1,5 @@
 package io.ready.tools;
 
-public class FileAccessLogStatic {
+public abstract class FileAccessLogStatic {
     public static String accessLogMsg = "";
 }

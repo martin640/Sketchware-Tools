@@ -6,7 +6,6 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
-import android.graphics.Rect;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -21,7 +20,6 @@ import android.util.DisplayMetrics;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.Window;
 import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
@@ -136,7 +134,7 @@ public class MainActivity extends AppCompatActivity {
         if (!getSharedPreferences("settings", MODE_PRIVATE).getBoolean("1", false) && !DestinyTools.isWideScreen(displayMetrics.heightPixels + DestinyTools.getSystemBarsHeight(MainActivity.this), displayMetrics.widthPixels)) {
             try {
                 TextView d = findViewById(R.id.textView4);
-                d.setText("We detected that your aspect ration is normal, so you will not need this tool.");
+                d.setText("We detected that your aspect ratio is normal, so this tool is not needed.");
                 ViewHelper.enableView(pixel_helper, false);
             } catch (NullPointerException e) {
                 e.printStackTrace();

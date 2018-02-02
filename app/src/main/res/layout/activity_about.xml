@@ -16,21 +16,110 @@
         android:layout_height="75dp"
         android:scaleType="centerCrop"
         android:clickable="true"
+        android:tooltipText="Check if Sketchware is installed"
         android:background="?attr/selectableItemBackgroundBorderless"
         android:src="@mipmap/ic_launcher_foreground"/>
+
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Sketchware Tools"
-        android:textSize="18dp"
         android:textColor="@android:color/white"
+        android:textSize="24sp"
         android:textStyle="bold"/>
+
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Created by GoCrafter_LP and Heystudios"
+        android:gravity="center"
+        android:text="Contributors:"
+        android:textColor="@android:color/white"
         android:textSize="14dp"
-        android:textColor="@android:color/white"/>
+        android:textStyle="bold|italic"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center">
+
+        <LinearLayout
+            android:layout_width="200dp"
+            android:layout_height="match_parent"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:padding="4dp">
+
+            <de.hdodenhof.circleimageview.CircleImageView
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:src="@drawable/pic_gocrafterlp"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:padding="8dp"
+                android:text="GoCrafter_LP"
+                android:tooltipText="Creator/developer/designer"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:clickable="true"
+                android:textColor="@android:color/white"
+                android:textSize="18sp"
+                android:textStyle="bold"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="200dp"
+            android:layout_height="match_parent"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:padding="4dp">
+
+            <de.hdodenhof.circleimageview.CircleImageView
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:src="@drawable/pic_xjonx"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:padding="8dp"
+                android:text="xjonx --- Anna"
+                android:tooltipText="Help with Pixel screen helper"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:clickable="true"
+                android:textColor="@android:color/white"
+                android:textSize="18sp"
+                android:textStyle="bold"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="200dp"
+            android:layout_height="match_parent"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:padding="4dp">
+
+            <de.hdodenhof.circleimageview.CircleImageView
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:src="@drawable/ic_account_circle_black_24dp"
+                android:tint="@color/colorAccent"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:padding="8dp"
+                android:text="Hey! Studios"
+                android:tooltipText="Idea, help"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:clickable="true"
+                android:textColor="@android:color/white"
+                android:textSize="18sp"
+                android:textStyle="bold"/>
+        </LinearLayout>
+    </LinearLayout>
+
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

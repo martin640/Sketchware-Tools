@@ -60,7 +60,9 @@
             android:enabled="true"
             android:process=":remote"/>
 
-        <activity android:name=".AboutActivity">
+        <activity
+            android:name=".AboutActivity"
+            android:theme="@style/AppTheme_Dark">
         </activity>
         <activity android:name=".SettingsActivity">
         </activity>

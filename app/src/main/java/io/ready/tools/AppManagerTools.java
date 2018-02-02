@@ -3,7 +3,7 @@ package io.ready.tools;
 import android.app.Activity;
 import android.content.pm.PackageManager;
 
-public class AppManagerTools {
+public abstract class AppManagerTools {
 
     public static Boolean isAppInstalled(CharSequence package_, Activity context) {
         PackageManager pm = context.getPackageManager();
