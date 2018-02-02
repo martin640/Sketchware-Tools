@@ -1,8 +1,11 @@
 package io.ready.updatelog;
 
+import android.text.Spanned;
+
 public class LogObject {
 
     private String data;
+    private Spanned spannable;
 
     public LogObject() {
         this.data = "";
