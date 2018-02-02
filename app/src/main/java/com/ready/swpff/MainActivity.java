@@ -40,6 +40,7 @@ import io.ready.tools.ServiceTools;
 import io.ready.tools.ThemeTools;
 import io.ready.tools.Updater;
 import io.ready.tools.ViewHelper;
+import io.ready.updatelog.UpdateLog;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -69,6 +70,7 @@ public class MainActivity extends AppCompatActivity {
     ProgressDialog progressDialog;
 
     Updater updater;
+    UpdateLog updateLog;
     DisplayMetrics displayMetrics;
     CountDownTimer timer;
     CountDownTimer countDownTimer;
@@ -100,6 +102,8 @@ public class MainActivity extends AppCompatActivity {
 
         updater = new Updater(this, BuildConfig.VERSION_CODE);
         updater.check();
+
+        updateLog = UpdateLog.create(this, "http://localhost:25565/");
 
         start_service1.setOnClickListener(new View.OnClickListener() {
             @Override

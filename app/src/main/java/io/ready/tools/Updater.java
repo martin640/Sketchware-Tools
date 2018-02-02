@@ -15,11 +15,15 @@ import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
+@Deprecated
 public class Updater {
 
     private int version;
     private Activity context;
 
+    /**
+     * Use {@link io.ready.updatelog.UpdateLog} instead
+     */
     public Updater(Activity context, int version_code) {
         this.version = version_code;
         this.context = context;
