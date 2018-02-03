@@ -38,7 +38,6 @@ import butterknife.ButterKnife;
 import io.ready.tools.DestinyTools;
 import io.ready.tools.ServiceTools;
 import io.ready.tools.ThemeTools;
-import io.ready.tools.Updater;
 import io.ready.tools.ViewHelper;
 import io.ready.updatelog.UpdateLog;
 
@@ -69,7 +68,6 @@ public class MainActivity extends AppCompatActivity {
 
     ProgressDialog progressDialog;
 
-    Updater updater;
     UpdateLog updateLog;
     DisplayMetrics displayMetrics;
     CountDownTimer timer;
@@ -99,11 +97,19 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void initializeView() {
+        updateLog = UpdateLog.create(this, "http://ready.hys.cz/sketchware-tools/log.json");
+        updateLog.fetchLatestData(new UpdateLog.OnDataFetched() {
+            @Override
+            public void onSuccess(UpdateLog object, String logData) {
+                object.showLog();
+                //Toast.makeText(getApplicationContext(), logData, Toast.LENGTH_SHORT).show();
+            }
 
-        updater = new Updater(this, BuildConfig.VERSION_CODE);
-        updater.check();
-
-        updateLog = UpdateLog.create(this, "http://localhost:25565/");
+            @Override
+            public void onError(Throwable error) {
+                Toast.makeText(getApplicationContext(), error.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
 
         start_service1.setOnClickListener(new View.OnClickListener() {
             @Override

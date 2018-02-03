@@ -15,7 +15,6 @@ import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
-@Deprecated
 public class Updater {
 
     private int version;
@@ -37,6 +36,33 @@ public class Updater {
         }
 
         return this;
+    }
+
+    public Boolean isLatest() {
+        return version == context.getSharedPreferences(getClass().getName(), Context.MODE_PRIVATE).getInt("saved_instance", -1);
+    }
+
+    public void showReleaseNotes(String log) {
+
+        AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(context);
+        LayoutInflater inflater = context.getLayoutInflater();
+        View dialogView = inflater.inflate(R.layout.release_notes, null);
+        dialogBuilder.setView(dialogView);
+
+        TextView release_notes = dialogView.findViewById(R.id.textView6);
+        Button gotit = dialogView.findViewById(R.id.button6);
+        final AlertDialog alertDialog = dialogBuilder.create();
+
+        release_notes.setText(log);
+        gotit.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                alertDialog.dismiss();
+                context.getSharedPreferences(getClass().getName(), Context.MODE_PRIVATE).edit().putInt("saved_instance", version).apply();
+            }
+        });
+
+        alertDialog.show();
     }
 
     public void showReleaseNotes() {
